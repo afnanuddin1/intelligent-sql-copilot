@@ -41,7 +41,7 @@ An AI-powered natural language to SQL assistant for flight data analysis. Type a
 
 1. Clone the repo:
 ```bash
-git clone https://github.com/YOUR_USERNAME/intelligent-sql-copilot.git
+git clone https://github.com/afnanuddin1/intelligent-sql-copilot.git
 cd intelligent-sql-copilot
 ```
 
