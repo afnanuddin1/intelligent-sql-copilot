@@ -14,6 +14,12 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-corner { background: var(--surface); }
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -307,7 +313,7 @@ body {
 .copy-btn:hover { border-color: var(--accent); color: var(--accent2); }
 
 /* RESULTS TABLE */
-.table-wrapper { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+.table-wrapper { overflow-x: auto; max-height: 600px; overflow-y: auto; }
 
 .results-table {
   width: 100%;

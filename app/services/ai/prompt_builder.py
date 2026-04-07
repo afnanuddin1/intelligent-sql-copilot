@@ -19,15 +19,25 @@ vw_airline_stats columns (use this for airline ranking/stats queries):
   id, name, iata_code, country, alliance, total_flights, total_routes,
   avg_dep_delay, avg_arr_delay, cancelled_flights, avg_rating, total_reviews
 
+vw_routes columns (use this for route/distance queries):
+  id, airline, airline_code, origin, origin_city, origin_country,
+  destination, dest_city, dest_country, distance_km, avg_duration_mins
+
 EXAMPLE QUERIES:
 - "flights going to France" -> SELECT * FROM vw_flight_summary WHERE dest_country ILIKE 'france' LIMIT 100;
 - "airlines with most flights" -> SELECT name, total_flights FROM vw_airline_stats ORDER BY total_flights DESC LIMIT 10;
+- "average review rating per airline" -> SELECT name, avg_rating FROM vw_airline_stats ORDER BY avg_rating DESC LIMIT 20;
 - "cancelled flights" -> SELECT * FROM vw_flight_summary WHERE status = 'cancelled' LIMIT 100;
+- "top 10 routes by distance" -> SELECT * FROM vw_routes ORDER BY distance_km DESC LIMIT 10;
+- "most delayed routes on average" -> SELECT origin, destination, ROUND(AVG(dep_delay_mins)::numeric, 2) AS avg_delay_mins FROM vw_flight_summary GROUP BY origin, destination ORDER BY avg_delay_mins DESC LIMIT 10;
+- "which aircraft model is used most frequently" -> SELECT aircraft_model, COUNT(*) AS flight_count FROM vw_flight_summary GROUP BY aircraft_model ORDER BY flight_count DESC LIMIT 10;
 
 RULES:
 1. Only write SELECT statements. Never INSERT, UPDATE, DELETE, DROP or DDL.
-2. ALWAYS use vw_flight_summary for flight queries. NEVER join it with raw tables.
-3. ALWAYS use vw_airline_stats for airline stats. NEVER join it with raw tables.
+2. ALWAYS use vw_flight_summary for flight queries. NEVER join it with raw tables or other views.
+3. ALWAYS use vw_airline_stats for airline stats. NEVER join it with raw tables or other views.
+3a. ALWAYS use vw_routes for route/distance queries. NEVER join it with raw tables or other views.
+3b. The aircraft column in vw_flight_summary is named "aircraft_model" — never use "model".
 4. Add ORDER BY when ranking is implied.
 5. Add LIMIT when the question asks for top N — default LIMIT 100.
 6. Use ILIKE for case-insensitive string matching.

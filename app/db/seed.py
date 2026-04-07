@@ -60,7 +60,85 @@ AIRCRAFT = [
 ]
 
 
+def create_views():
+    with engine.connect() as conn:
+        print("Creating views...")
+        conn.execute(text("""
+            CREATE OR REPLACE VIEW vw_flight_summary AS
+            SELECT
+                f.id,
+                f.flight_number,
+                al.name AS airline,
+                al.iata_code AS airline_code,
+                orig.iata_code AS origin,
+                orig.city AS origin_city,
+                orig.country AS origin_country,
+                dest.iata_code AS destination,
+                dest.city AS dest_city,
+                dest.country AS dest_country,
+                f.scheduled_dep,
+                f.scheduled_arr,
+                f.status,
+                f.dep_delay_mins,
+                f.arr_delay_mins,
+                f.seats_available,
+                f.seats_sold,
+                f.base_price,
+                ac.model AS aircraft_model,
+                r.distance_km
+            FROM flights f
+            JOIN routes r ON f.route_id = r.id
+            JOIN airlines al ON r.airline_id = al.id
+            JOIN airports orig ON r.origin_airport_id = orig.id
+            JOIN airports dest ON r.dest_airport_id = dest.id
+            JOIN aircraft ac ON f.aircraft_id = ac.id
+        """))
+        conn.execute(text("""
+            CREATE OR REPLACE VIEW vw_airline_stats AS
+            SELECT
+                al.id,
+                al.name,
+                al.iata_code,
+                al.country,
+                al.alliance,
+                COUNT(DISTINCT f.id) AS total_flights,
+                COUNT(DISTINCT r.id) AS total_routes,
+                ROUND(AVG(f.dep_delay_mins)::numeric, 2) AS avg_dep_delay,
+                ROUND(AVG(f.arr_delay_mins)::numeric, 2) AS avg_arr_delay,
+                COUNT(DISTINCT f.id) FILTER (WHERE f.status = 'cancelled') AS cancelled_flights,
+                ROUND(AVG(rv.overall_rating)::numeric, 2) AS avg_rating,
+                COUNT(rv.id) AS total_reviews
+            FROM airlines al
+            LEFT JOIN routes r ON r.airline_id = al.id
+            LEFT JOIN flights f ON f.route_id = r.id
+            LEFT JOIN reviews rv ON rv.airline_id = al.id
+            GROUP BY al.id, al.name, al.iata_code, al.country, al.alliance
+        """))
+        conn.execute(text("""
+            CREATE OR REPLACE VIEW vw_routes AS
+            SELECT
+                r.id,
+                al.name AS airline,
+                al.iata_code AS airline_code,
+                orig.iata_code AS origin,
+                orig.city AS origin_city,
+                orig.country AS origin_country,
+                dest.iata_code AS destination,
+                dest.city AS dest_city,
+                dest.country AS dest_country,
+                r.distance_km,
+                r.avg_duration_mins
+            FROM routes r
+            JOIN airlines al ON r.airline_id = al.id
+            JOIN airports orig ON r.origin_airport_id = orig.id
+            JOIN airports dest ON r.dest_airport_id = dest.id
+        """))
+        conn.commit()
+        print("Views created.")
+
+
 def seed():
+    create_views()
     with engine.connect() as conn:
         print("Seeding airports...")
         for a in AIRPORTS:
@@ -132,9 +210,12 @@ def seed():
             airline_code = conn.execute(text("SELECT iata_code FROM airlines WHERE id=:id"), {"id": airline_id}).fetchone()[0]
 
             for _ in range(random.randint(15, 28)):
-                dep = now - timedelta(days=random.randint(0,90), hours=random.randint(0,23), minutes=random.choice([0,15,30,45]))
+                dep = now + timedelta(days=random.randint(-30,30), hours=random.randint(0,23), minutes=random.choice([0,15,30,45]))
                 arr = dep + timedelta(minutes=dur)
-                status = random.choices(statuses, weights=weights)[0]
+                if dep > now:
+                    status = random.choices(["scheduled","cancelled"], weights=[0.95, 0.05])[0]
+                else:
+                    status = random.choices(statuses, weights=weights)[0]
                 ac_id  = random.choice(aircraft_ids)
                 seats  = random.choice([150,162,180,296,314,396,416,555])
                 sold   = random.randint(int(seats*0.4), seats)

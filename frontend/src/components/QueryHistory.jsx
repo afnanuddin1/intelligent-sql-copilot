@@ -3,7 +3,7 @@ import { getHistory } from '../api/client'
 import useQueryStore from '../store/queryStore'
 
 export default function QueryHistory() {
-  const { history, historyLoading, setHistory, setHistoryLoading, setResult } = useQueryStore()
+  const { history, historyLoading, setHistory, setHistoryLoading, setPendingInput } = useQueryStore()
 
   useEffect(() => {
     const load = async () => {
@@ -32,7 +32,7 @@ export default function QueryHistory() {
       ) : (
         <div className="history-list">
           {history.map((item) => (
-            <div key={item.id} className="history-item">
+            <div key={item.id} className="history-item" onClick={() => setPendingInput(item.natural_language)}>
               <p className="history-nl">{item.natural_language}</p>
               <div className="history-meta">
                 <span>{item.execution_time_ms?.toFixed(0)}ms</span>

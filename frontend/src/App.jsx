@@ -1,8 +1,6 @@
 import QueryInput from './components/QueryInput'
 import SQLDisplay from './components/SQLDisplay'
 import ResultsTable from './components/ResultsTable'
-import QueryPlanTree from './components/QueryPlanTree'
-import OptimizationPanel from './components/OptimizationPanel'
 import QueryHistory from './components/QueryHistory'
 import useQueryStore from './store/queryStore'
 import './App.css'
@@ -33,11 +31,7 @@ export default function App() {
           <QueryInput />
           {error && <div className="error-banner">⚠ {error}</div>}
           <SQLDisplay />
-          <div className="panels-row">
-            <ResultsTable />
-            <QueryPlanTree />
-          </div>
-          <OptimizationPanel />
+          <ResultsTable />
         </div>
       </main>
     </div>

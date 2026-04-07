@@ -6,12 +6,14 @@ const useQueryStore = create((set) => ({
   result: null,
   history: [],
   historyLoading: false,
+  pendingInput: null,
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error }),
   setResult: (result) => set({ result }),
   setHistory: (history) => set({ history }),
   setHistoryLoading: (historyLoading) => set({ historyLoading }),
   clearResult: () => set({ result: null, error: null }),
+  setPendingInput: (pendingInput) => set({ pendingInput }),
 }))
 
 export default useQueryStore

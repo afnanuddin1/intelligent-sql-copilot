@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { runQuery } from '../api/client'
 import useQueryStore from '../store/queryStore'
 
@@ -8,19 +8,19 @@ const EXAMPLES = [
   'Show me all cancelled flights',
   'Which aircraft model is used most frequently?',
   'What is the average review rating per airline?',
-  'Show top 10 routes by distance',
 ]
 
 export default function QueryInput() {
   const [input, setInput] = useState('')
-  const { isLoading, setLoading, setResult, setError } = useQueryStore()
+  const { isLoading, setLoading, setResult, setError, pendingInput, setPendingInput } = useQueryStore()
 
-  const handleSubmit = async () => {
-    if (!input.trim() || isLoading) return
+  const handleSubmit = async (query) => {
+    const q = (typeof query === 'string' ? query : input).trim()
+    if (!q || isLoading) return
     setLoading(true)
     setError(null)
     try {
-      const res = await runQuery(input.trim())
+      const res = await runQuery(q)
       setResult(res.data)
     } catch (err) {
       setError(err.response?.data?.detail || 'Something went wrong')
@@ -28,6 +28,14 @@ export default function QueryInput() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (pendingInput) {
+      setInput(pendingInput)
+      setPendingInput(null)
+      handleSubmit(pendingInput)
+    }
+  }, [pendingInput])
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSubmit()

@@ -21,7 +21,15 @@ export default function ResultsTable() {
             {rows.map((row, i) => (
               <tr key={i}>
                 {row.map((cell, j) => (
-                  <td key={j}>{cell === null ? <span className="null-val">NULL</span> : String(cell)}</td>
+                  <td key={j}>
+                    {cell === null
+                      ? <span className="null-val">NULL</span>
+                      : typeof cell === 'number' && !Number.isInteger(cell)
+                        ? parseFloat(cell.toFixed(2))
+                        : typeof cell === 'string' && /^\d+\.\d{5,}$/.test(cell)
+                          ? parseFloat(parseFloat(cell).toFixed(2))
+                          : String(cell)}
+                  </td>
                 ))}
               </tr>
             ))}
